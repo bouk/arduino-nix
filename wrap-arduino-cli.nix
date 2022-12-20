@@ -9,7 +9,7 @@ let
 
     builtinPackages = (map latestVersion (builtins.attrValues pkgs.arduinoPackages.tools.builtin));
 
-    libPath = pkgs.symlinkJoin {
+    userPath = pkgs.symlinkJoin {
       name = "arduino-libraries";
       paths = libraries;
     };
@@ -27,8 +27,11 @@ let
     pkgs.runCommand "arduino-cli-wrapped" {
       buildInputs = [ pkgs.makeWrapper ];
       meta.mainProgram = "arduino-cli";
+      passthru = {
+        inherit dataPath userPath;
+      };
     } ''
-      makeWrapper ${pkgs.arduino-cli}/bin/arduino-cli $out/bin/arduino-cli --set ARDUINO_UPDATER_ENABLE_NOTIFICATION false --set ARDUINO_DIRECTORIES_DATA ${dataPath} --set ARDUINO_DIRECTORIES_USER ${libPath}
+      makeWrapper ${pkgs.arduino-cli}/bin/arduino-cli $out/bin/arduino-cli --set ARDUINO_UPDATER_ENABLE_NOTIFICATION false --set ARDUINO_DIRECTORIES_DATA ${dataPath} --set ARDUINO_DIRECTORIES_USER ${userPath}
     '';
 in
   lib.makeOverridable wrap
