@@ -17,5 +17,8 @@
     overlay = (self: super: {
       wrapArduinoCLI = self.callPackage ./wrap-arduino-cli.nix { };
     });
+
+    # Expose helper to select package
+    latestVersion = (import ./lib.nix { lib = null; }).latestVersion;
   };
 }
