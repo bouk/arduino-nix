@@ -11,8 +11,12 @@ let
       inherit version;
 
       installPhase = ''
+        runHook preInstall
+
         mkdir -p "$out/libraries/$pname"
         cp -R * "$out/libraries/$pname/"
+
+        runHook postInstall
       '';
       nativeBuildInputs = [ pkgs.unzip ];
       src = fetchurl ({

@@ -46,12 +46,16 @@ let
         toolsDependencies = map ({packager, name, version}: arduinoPackages.tools.${packager}.${name}.${version}) toolsDependencies;
         passAsFile = [ "toolsDependencies" ];
         installPhase = ''
+          runHook preInstall
+
           mkdir -p "$out/$dirName"
           cp -R * "$out/$dirName/"
 
           for i in $(cat $toolsDependenciesPath); do
             ${lndir}/bin/lndir -silent $i $out
           done
+
+          runHook postInstall
         '';
         nativeBuildInputs = [ pkgs.unzip ];
         src = fetchurl ({
