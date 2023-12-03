@@ -38,12 +38,9 @@ let
   }: let
   in pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
     inherit name src;
-    nativeBuildInputs = with pkgs; [
-      arduinoEnv
-    ];
 
     buildPhase = ''
-      arduino-cli compile --log --output-dir=out --fqbn=${fqbn}
+      ${arduinoEnv}/bin/arduino-cli compile --log --output-dir=out --fqbn=${fqbn}
     '';
 
     installPhase = ''
