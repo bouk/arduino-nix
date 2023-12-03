@@ -100,6 +100,12 @@ From the indexes you create overlays which then make the Arduino packages and li
             src = ./. + "/my-esp32-poe-iso-project";
             fqbn = "esp32:esp32:esp32-poe-iso";
           };
+        };
+
+        hydraJobs = {
+          # Build binary tarball in CI
+          my-esp32-poe-iso-project = my-esp32-poe-iso-project.binaryTarball;
+        };
       }
     ));
 }
@@ -108,8 +114,10 @@ From the indexes you create overlays which then make the Arduino packages and li
 ## Interactive arduino-cli usage:
 
 ```
-nix develop .#arduinoEnv
+nix shell .#arduinoEnv
 ```
+
+This adds a wrapped version of `arduino-cli` to your path that reflects you Arduino environment.
 
 ## Build Arduino Sketch
 

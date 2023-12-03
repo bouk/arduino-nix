@@ -49,6 +49,10 @@ let
         inherit fqbn;
         arduinoSketch = (finalAttrs.finalPackage);
       };
+      binaryTarball = binaryTarball {
+        inherit name;
+        arduinoSketch = (finalAttrs.finalPackage);
+      };
     };
   });
 
@@ -57,6 +61,19 @@ let
     , fqbn
   }: pkgs.writeScriptBin "upload-arduino-sketch" ''
       ${arduinoEnv}/bin/arduino-cli upload --log --input-dir=${arduinoSketch} --fqbn=${fqbn} "$@"
+  '';
+
+  binaryTarball = {
+    arduinoSketch
+    , name
+  }: pkgs.runCommand "binary-tarball" {} ''
+      mkdir -p $out
+
+      cd ${arduinoSketch}
+      ${pkgs.gnutar}/bin/tar -czf $out/${name}.tar.gz *
+
+      mkdir -p $out/nix-support
+      echo "file binary-dist $out/${name}.tar.gz" > $out/nix-support/hydra-build-products
   '';
 in
   mkArduinoEnv
