@@ -53,8 +53,9 @@ From the indexes you create overlays which then make the Arduino packages and li
         pkgs = (import nixpkgs) {
           inherit system overlays;
         };
-      in rec {
-        packages.arduino-cli = pkgs.wrapArduinoCLI {
+
+        // arduinoEnv provides bin/arduino-cli and some useful helpers functions
+        arduinoEnv = pkgs.makeArduinoEnv {
           libraries = with pkgs.arduinoLibraries; [
             (arduino-nix.latestVersion ADS1X15)
             (arduino-nix.latestVersion Ethernet_Generic)
@@ -68,7 +69,40 @@ From the indexes you create overlays which then make the Arduino packages and li
             platforms.rp2040.rp2040."2.3.3"
           ];
         };
+      in rec {
+        packages = {
+          inherit arduinoEnv;
+
+          my-rp2020-project = arduinoEnv.buildArduinoSketch {
+            name = "my-rp2040-project";
+            src = ./. + "/my-rp2040-project";
+            fqbn = "arduino:mbed_rp2040:pico";
+          };
       }
     ));
 }
 ```
+
+## Interactive arduino-cli usage:
+
+```
+nix develop .#arduinoEnv
+```
+
+## Build Arduino Sketch
+
+```
+nix build .#my-rp2040-project
+```
+
+Now you have `result` in your current working directory containing the compile outputs.
+
+## Upload to board
+
+```
+nix run .#my-rp2040-project.uploadArduinoSketch -- -p /dev/ttyUSB0
+```
+
+This with upload the sketch via serial on `/dev/ttyUSB0`.
+You can append any additional options from `arduino-cli upload` after `--`.
+It uses the same fqbn as specified in `buildArduinoSketch`.
