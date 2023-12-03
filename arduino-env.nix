@@ -2,8 +2,8 @@
 
 let
   mkArduinoEnv = {
-    packages
-    , libraries
+    packages ? []
+    , libraries ? []
     , runtimeInputs ? []
   }: let
     arduino-cli = pkgs.wrapArduinoCLI {
