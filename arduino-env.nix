@@ -4,7 +4,7 @@ let
   mkArduinoEnv = {
     packages
     , libraries
-    , nativeBuildInputs ? []
+    , runtimeInputs ? []
   }: let
     arduino-cli = pkgs.wrapArduinoCLI {
       inherit packages libraries;
@@ -14,16 +14,12 @@ let
 
     buildInputs = [ pkgs.makeWrapper ];
 
-    nativeBuildInputs = [
-      arduino-cli
-    ] ++ nativeBuildInputs;
-
     phases = ["buildPhase"];
 
     buildPhase = ''
       mkdir -p $out
       makeWrapper ${arduino-cli}/bin/arduino-cli $out/bin/arduino-cli \
-        --prefix PATH : ${lib.makeBinPath nativeBuildInputs}
+        --prefix PATH : ${lib.makeBinPath runtimeInputs}
     '';
 
     passthru = {
