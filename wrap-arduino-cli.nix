@@ -31,7 +31,10 @@ let
         inherit dataPath userPath;
       };
     } ''
-      makeWrapper ${pkgs.arduino-cli}/bin/arduino-cli $out/bin/arduino-cli --set ARDUINO_UPDATER_ENABLE_NOTIFICATION false --set ARDUINO_DIRECTORIES_DATA ${dataPath} --set ARDUINO_DIRECTORIES_USER ${userPath}
+      makeWrapper ${pkgs.arduino-cli}/bin/arduino-cli $out/bin/arduino-cli \
+        --set ARDUINO_UPDATER_ENABLE_NOTIFICATION false \
+        --set ARDUINO_DIRECTORIES_DATA ${dataPath} \
+        --set ARDUINO_DIRECTORIES_USER ${userPath}
     '';
 in
   lib.makeOverridable wrap

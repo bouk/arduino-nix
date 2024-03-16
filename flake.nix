@@ -16,6 +16,7 @@
 
     overlay = (self: super: {
       wrapArduinoCLI = self.callPackage ./wrap-arduino-cli.nix { };
+      mkArduinoEnv = self.callPackage ./arduino-env.nix {};
     });
 
     # Expose helper to select package

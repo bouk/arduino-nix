@@ -46,6 +46,10 @@ From the indexes you create overlays which then make the Arduino packages and li
       (arduino-nix.mkArduinoPackageOverlay (arduino-package-index + "/package_index.json"))
       (arduino-nix.mkArduinoPackageOverlay (arduino-package-rp2040-index + "/package_rp2040_index.json"))
       (arduino-nix.mkArduinoLibraryOverlay (arduino-library-index + "/library_index.json"))
+      (arduino-nix.mkArduinoPackageOverlay (pkgs.fetchurl {
+        url = "https://raw.githubusercontent.com/espressif/arduino-esp32/8bae7e23376c6087a55e46456049ae6d73b72e16/package_esp32_index.json";
+        hash = "sha256-0kvZeRDtE/JKJes86omyN4cf4HWfX68P7xPfE+BvTC8=";
+      }))
     ];
   in
   (flake-utils.lib.eachDefaultSystem (system:
@@ -53,8 +57,9 @@ From the indexes you create overlays which then make the Arduino packages and li
         pkgs = (import nixpkgs) {
           inherit system overlays;
         };
-      in rec {
-        packages.arduino-cli = pkgs.wrapArduinoCLI {
+
+        # arduinoEnv provides bin/arduino-cli and some useful helpers functions
+        arduinoEnv = pkgs.makeArduinoEnv {
           libraries = with pkgs.arduinoLibraries; [
             (arduino-nix.latestVersion ADS1X15)
             (arduino-nix.latestVersion Ethernet_Generic)
@@ -68,7 +73,66 @@ From the indexes you create overlays which then make the Arduino packages and li
             platforms.rp2040.rp2040."2.3.3"
           ];
         };
+
+        arduinoEnvESP32 = pkgs.makeArduinoEnv {
+          packages = with pkgs.arduinoPackages; [
+            platforms.esp32.esp32."2.0.14"
+          ];
+
+          # ESP32 tools require python with some custom dependencies
+          # we can provide them via runtimeInputs
+          runtimeInputs = with pkgs; [
+            (python3.withPackages(ps: with ps; [ pyserial ]))
+          ];
+        };
+      in rec {
+        packages = {
+          inherit arduinoEnv;
+
+          my-rp2020-project = arduinoEnv.buildArduinoSketch {
+            name = "my-rp2040-project";
+            src = ./. + "/my-rp2040-project";
+            fqbn = "arduino:mbed_rp2040:pico";
+          };
+
+          my-esp32-poe-iso-project = arduinoEnvESP32.buildArduinoSketch {
+            name = "my-esp32-poe-iso-project";
+            src = ./. + "/my-esp32-poe-iso-project";
+            fqbn = "esp32:esp32:esp32-poe-iso";
+          };
+        };
+
+        hydraJobs = {
+          # Build binary tarball in CI
+          my-esp32-poe-iso-project = my-esp32-poe-iso-project.binaryTarball;
+        };
       }
     ));
 }
 ```
+
+## Interactive arduino-cli usage:
+
+```
+nix shell .#arduinoEnv
+```
+
+This adds a wrapped version of `arduino-cli` to your path that reflects you Arduino environment.
+
+## Build Arduino Sketch
+
+```
+nix build .#my-rp2040-project
+```
+
+Now you have `result` in your current working directory containing the compile outputs.
+
+## Upload to board
+
+```
+nix run .#my-rp2040-project.uploadArduinoSketch -- -p /dev/ttyUSB0
+```
+
+This with upload the sketch via serial on `/dev/ttyUSB0`.
+You can append any additional options from `arduino-cli upload` after `--`.
+It uses the same fqbn as specified in `buildArduinoSketch`.
