@@ -22,6 +22,9 @@ let
         (pkgs.writeTextDir "package_index.json" (builtins.toJSON {packages = [];}))
         (pkgs.writeTextDir "library_index.json" (builtins.toJSON {libraries = [];}))
       ];
+      postBuild = ''
+        mkdir -p $out/staging
+      '';
     };
   in
     pkgs.runCommand "arduino-cli-wrapped" {
