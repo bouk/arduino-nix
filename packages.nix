@@ -61,7 +61,7 @@ let
         # Iterate over each key-value pair in buildProperties
         ${
           pkgs.lib.concatStringsSep "\n" (pkgs.lib.mapAttrsToList (key: value: ''
-            sed -i "s|^${key}=.*|${key}=\"${value}\"|" "$dirName/platform.txt"
+            sed -i "s|^${key}=.*|${key}=\"${value}\"|" "$out/$dirName/platform.txt"
           '') buildProperties)
         }
         '';
