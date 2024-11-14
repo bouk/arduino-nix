@@ -57,19 +57,20 @@ let
 
           runHook postInstall
         '';
-        # Iterate over each key-value pair in buildProperties
-        # and append/update it accordingly in platform.txt
-        buildPropertiesFixupCommands = pkgs.lib.concatStringsSep "\n" (pkgs.lib.mapAttrsToList (key: value: ''
-          if grep -q "^${key}=" "$out/$dirName/platform.txt"; then
-            # If the line exists, use sed to replace it
-            sed -i "s|^${key}=.*|${key}=\"${value}\"|" "$out/$dirName/platform.txt"
-          else
-            # If the line doesn't exist, add it at the end of the file
-            echo "${key}=${value}" >> "$out/$dirName/platform.txt"
-          fi
-          '') buildProperties);
         fixupPhase = ''
-          ${buildPropertiesFixupCommands}
+          # Iterate over each key-value pair in buildProperties
+          # and append/update it accordingly in platform.txt
+          ${
+            pkgs.lib.concatStringsSep "\n" (pkgs.lib.mapAttrsToList (key: value: ''
+            if grep -q "^${key}=" "$out/$dirName/platform.txt"; then
+              # If the line exists, use sed to replace it
+              sed -i "s|^${key}=.*|${key}=\"${value}\"|" "$out/$dirName/platform.txt"
+            else
+              # If the line doesn't exist, add it at the end of the file
+              echo "${key}=${value}" >> "$out/$dirName/platform.txt"
+            fi
+            '') buildProperties)
+          }
         '';
         nativeBuildInputs = [ pkgs.unzip ];
         src = fetchurl ({
