@@ -1,4 +1,4 @@
-{ fetchzip, stdenv, lib, packageIndex, pkgsBuildHost, pkgs, arduinoPackages }:
+{ fetchzip, stdenv, lib, packageIndex, buildProperties, pkgsBuildHost, pkgs, arduinoPackages }:
 
 with builtins;
 let
@@ -56,6 +56,14 @@ let
           done
 
           runHook postInstall
+        '';
+        patchPhase = ''
+        # Iterate over each key-value pair in buildProperties
+        ${
+          pkgs.lib.concatStringsSep "\n" (mapAttrsToList (key: value: ''
+            sed -i "s|^${key}=.*|${key}=\"${value}\"|" "$dirName/platform.txt"
+          '') buildProperties)
+        }
         '';
         nativeBuildInputs = [ pkgs.unzip ];
         src = fetchurl ({

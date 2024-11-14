@@ -2,9 +2,10 @@
   description = "Wrapper for arduino-cli";
 
   outputs = { self }: {
-    mkArduinoPackageOverlay = packageIndexFile: (self: super: {
+    mkArduinoPackageOverlay = { packageIndexFile, buildProperties ? {} }: (self: super: {
       arduinoPackages = self.lib.recursiveUpdate (super.arduinoPackages or {}) (self.callPackage ./packages.nix {
         packageIndex = builtins.fromJSON (builtins.readFile packageIndexFile);
+        buildProperties = buildProperties;
       });
     });
 
