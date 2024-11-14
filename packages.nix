@@ -57,7 +57,7 @@ let
 
           runHook postInstall
         '';
-        patchPhase = ''
+        fixupPhase = ''
         # Iterate over each key-value pair in buildProperties
         ${
           pkgs.lib.concatStringsSep "\n" (pkgs.lib.mapAttrsToList (key: value: ''
