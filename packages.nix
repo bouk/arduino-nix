@@ -60,7 +60,7 @@ let
         patchPhase = ''
         # Iterate over each key-value pair in buildProperties
         ${
-          pkgs.lib.concatStringsSep "\n" (mapAttrsToList (key: value: ''
+          pkgs.lib.concatStringsSep "\n" (pkgs.lib.mapAttrsToList (key: value: ''
             sed -i "s|^${key}=.*|${key}=\"${value}\"|" "$dirName/platform.txt"
           '') buildProperties)
         }
