@@ -16,16 +16,8 @@ From the indexes you create overlays which then make the Arduino packages and li
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     arduino-nix.url = "github:bouk/arduino-nix";
-    arduino-library-index = {
-      url = "github:bouk/arduino-indexes/library_index";
-      flake = false;
-    };
-    arduino-package-index = {
-      url = "github:bouk/arduino-indexes/package_index";
-      flake = false;
-    };
-    arduino-package-rp2040-index = {
-      url = "github:bouk/arduino-indexes/package_rp2040_index";
+    arduino-index = {
+      url = "github:bouk/arduino-indexes";
       flake = false;
     };
   };
@@ -35,17 +27,15 @@ From the indexes you create overlays which then make the Arduino packages and li
     nixpkgs,
     flake-utils,
     arduino-nix,
-    arduino-package-index,
-    arduino-package-rp2040-index,
-    arduino-library-index,
+    arduino-index,
     ...
   }@attrs:
   let
     overlays = [
       (arduino-nix.overlay)
-      (arduino-nix.mkArduinoPackageOverlay (arduino-package-index + "/package_index.json"))
-      (arduino-nix.mkArduinoPackageOverlay (arduino-package-rp2040-index + "/package_rp2040_index.json"))
-      (arduino-nix.mkArduinoLibraryOverlay (arduino-library-index + "/library_index.json"))
+      (arduino-nix.mkArduinoPackageOverlay (arduino-index + "/index/package_index.json"))
+      (arduino-nix.mkArduinoPackageOverlay (arduino-index + "/index/package_rp2040_index.json"))
+      (arduino-nix.mkArduinoLibraryOverlay (arduino-index + "/index/library_index.json"))
     ];
   in
   (flake-utils.lib.eachDefaultSystem (system:
