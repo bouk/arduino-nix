@@ -62,3 +62,19 @@ From the indexes you create overlays which then make the Arduino packages and li
     ));
 }
 ```
+## Fix-ups for specific platforms
+
+Some platform packages need fix-ups to work usefully; this can often be done by overriding the derivation for the platform package. Platforms that are currently known to need this are documented in this section.
+
+### esp8266
+
+The esp8266 core package has some convoluted code around enabling and disabling "aggressive core caching"; this seems to rely on a file `cores/esp8266/CommonHFile.h` either already existing or being created on first use. Obviously the nix store is read-only so this must be done when the derivation for the package is built:
+```
+  ...
+  packages = with pkgs.arduinoPackages; [
+    (platforms.esp8266.esp8266."3.1.2".overrideAttrs {
+      postInstall = "touch $out/$dirName/cores/esp8266/CommonHFile.h";
+    })
+  ]
+  ...
+```
