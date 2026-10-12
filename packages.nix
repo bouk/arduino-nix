@@ -2,7 +2,7 @@
 
 with builtins;
 let
-  inherit (pkgsBuildHost.xorg) lndir;
+  inherit (pkgsBuildHost) lndir;
   inherit (pkgs.callPackage ./lib.nix {}) selectSystem convertHash;
 
   # Tools are installed in $platform_name/tools/$name/$version
